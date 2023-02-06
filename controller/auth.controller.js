@@ -2,9 +2,11 @@ const User = require('../models/user');
 const JsonWebToken = require('jsonwebtoken');
 const Util = require('util');
 const appErrors = require('../utils/errors');
+const {catchAsync,createRandomPassword,mailOptions} = require('../utils/utils');
+
 
 // For Login New User
-exports.login = async function (req, res, next) {
+exports.login = catchAsync(async function (req, res, next) {
     const { username, password } = req.body;
     if (!username && !password) {
         return next(new appErrors("Incomplete Information", 400))
@@ -13,18 +15,20 @@ exports.login = async function (req, res, next) {
         email: username,
     }
     const user = await User.findOne(query).select("+password");
+    console.log(user)
     if (!user || !await user.correctPassword(user.password, password)) {
         next(new appErrors("Incorrect Username or Password", 400));
     }
     else {
         const token = signToken(user._id);
         console.log(token,"21");
-        return res.cookie('jwt', token, {
-            expiresIn: 24 * 60 * 60 * 1000,
+         res.cookie('jwt', token, {
+            expiresIn: 24 * 60 * 60 * 60 * 1000,
             httpOnly: true
         })
+        res.status(200).json({msg:'login successful',isSuperAdmin:user.isSuperAdmin,token:token})
     }
-}
+})
 
 //For Creating a new user
 
@@ -70,24 +74,26 @@ exports.resetPassword = function(req,res){
 
 //Auth middleware
 
-exports.protect = async function(req,res,next){
+exports.protect =  catchAsync (async function(req,res,next){
     let token;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
-        token = req.headers.authorization.split('')[1]
+        token = req.headers.authorization.split(' ')[1]
     }
+    console.log(token,req.headers.authorization)
     if(!token){
-
+        return next(new appErrors('Invalid Request',404))
     }
-    let correct = await Util.promisify(JsonWebToken.verify)(token,JWT_SECERET);
+    let correct = await Util.promisify(JsonWebToken.verify)(token,process.env.JWT_SECERET);
 
     const freshUser =await  User.findById(correct.id);
     if(!freshUser){
-        // user doesn't login 
+        return next(new appErrors('Invalid Request',404))
+    // user doesn't login 
     }
     console.log(correct);
     req.user=freshUser;
     next();
-}
+})
 
 //Middleware for SuperAdmin 
 

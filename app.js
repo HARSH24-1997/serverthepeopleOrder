@@ -14,6 +14,7 @@ dotenv.config({path:'./config.env'});
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var employeeRouter = require('./routes/employee');
 
 var DB = process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
 
@@ -35,11 +36,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: ["http://localhost:4200"],
+}));
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/user', usersRouter);
+app.use('/employee', employeeRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

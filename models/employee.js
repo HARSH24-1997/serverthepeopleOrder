@@ -7,16 +7,19 @@ const empSchema = new moongoose.Schema({
         type : String,
         require : [true,"Please tell us your name!"]
     },
+    code:{
+        type : String,
+    },
     email:{
         type : String,
         require : [true,"Please provide your name!"],
         unique: true,
         lowercase : true,
-        validate : [validator,isEmail,"Please provide a valid Email"]
+        // validate : [validator,isEmail,"Please provide a valid Email"]
     },
-    panCard:{
+    panCardId:{
         type : String,
-        require : [true,"Please Provide a Password"]
+        require : [true,"Please Provide a PanCard Information"]
     },
     adharCard:{
         type : String,
@@ -36,7 +39,7 @@ const empSchema = new moongoose.Schema({
     },
     companyDetails :{
         type : String,
-        require : true
+        // require : true
     },
     status :{
         type : String,
@@ -45,6 +48,8 @@ const empSchema = new moongoose.Schema({
     updation:{
 
     },
+    dateOfJoining:Date,
+    dateOfoffer:Date,
     details:{},
     isDeleted:{
         type: Boolean,
@@ -54,13 +59,19 @@ const empSchema = new moongoose.Schema({
         type:Boolean,
         default : true
     },
-    
-    _created:Date,
-    isActive:Boolean,
+    _created:{
+        type:Date,
+        default:Date.now()
+    },
 
 });
 
+empSchema.pre('save',async function(next){
+    if(!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password,12);
+    next();
+})
 
-const User = moongoose.model('User',userSchema);
+const Employee = moongoose.model('Employee',empSchema);
 
-module.exports = User;
+module.exports = Employee;

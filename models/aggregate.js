@@ -10,9 +10,8 @@ const aggregateSchema = new moongoose.Schema({
     email:{
         type : String,
         require : [true,"Please provide your name!"],
-        unique: true,
         lowercase : true,
-        validate : [validator,isEmail,"Please provide a valid Email"]
+        // validate : [validator,isEmail,"Please provide a valid Email"]
     },
     panCard:{
         type : String,
@@ -49,6 +48,6 @@ const aggregateSchema = new moongoose.Schema({
 });
 
 
-const User = moongoose.model('User',userSchema);
+const Aggregate = moongoose.model('Aggregate',aggregateSchema);
 
-module.exports = User;
+module.exports = Aggregate;

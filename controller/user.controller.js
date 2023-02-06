@@ -57,9 +57,16 @@ exports.delete = async function (req, res) {
     }
 }
 
-exports.update = function (req, re) {
-
-}
+exports.update = catchAsync(async function (req, re) {
+    if (!req.body.id) {
+        return next(new appErrors('Please Provide user Id ', 404));
+    }
+    const updateUser = await User.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.params.id) }, req.body, { new: true });
+    if(updateUser){
+        return res.status(200).json({ "msg": "Updated Succesfully"  })
+    }
+    else next (new appErrors('Unable To update the user',404));
+});
 
 exports.getAll = catchAsync(async function (req, res,next) {
     console.log("343434");
@@ -83,6 +90,10 @@ exports.getAll = catchAsync(async function (req, res,next) {
     }
 });
 
+
+exports.getByToken = catchAsync(async function(req,res,next){
+    return res.status(200).json(req.user);
+})
 
 
 
