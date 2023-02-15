@@ -32,29 +32,12 @@ exports.login = catchAsync(async function (req, res, next) {
 
 //For Creating a new user
 
-exports.signUp = async function(req,res,next){
-    if(req.body.username){
-
-    }
-    if(req.body.password){
-
-    }
-    if(req.body.subdomain){
-
-    }
-
-    var query = {
-
-    }
-
-    const newUser = await User.create(query);
-    const token = signToken(newUser._id)
-    return res.status(201).json({
-        msg:"Success",
-        token:token,
-        data : newUser
+exports.logOut = async function(req,res,next){
+    res.cookie('jwt',"logOut" , {
+        expiresIn: 10000,
+        httpOnly: true
     })
-    
+    res.status(200).json({msg:'Successful LogOut'})
 }
 
 //Reseting the Password
@@ -75,6 +58,7 @@ exports.resetPassword = function(req,res){
 //Auth middleware
 
 exports.protect =  catchAsync (async function(req,res,next){
+    console.log("Im protector")
     let token;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
         token = req.headers.authorization.split(' ')[1]
@@ -97,22 +81,24 @@ exports.protect =  catchAsync (async function(req,res,next){
 
 //Middleware for SuperAdmin 
 
-
-exports.superAdmin = function(req,res,next){
-    if(req.isSuperAdmin){
-        next();
+exports.returnStatus = function(req,res,next){
+    console.log(req.user);
+    let isSigned = false;
+    let isSuperAdmin = undefined;
+    if(req.user.isActive){
+        isSigned = true
     }
-    else{
-
+    if(req.user.isSuperAdmin){
+        isSuperAdmin = true
     }
+    return res.status(200).json({   
+        isSigned:isSigned,
+        isSuperAdmin:isSuperAdmin,
+        user:req.user
+    })
 
 }
 
-//Sending Password Mail
-
-const sendPasswordMail= () =>{
-
-}
 
 //Sign Token 
 

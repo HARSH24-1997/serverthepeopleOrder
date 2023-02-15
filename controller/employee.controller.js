@@ -2,122 +2,173 @@
 const Employee = require('../models/employee');
 const aggregate = require('../models/aggregate');
 const mongoose = require('mongoose')
-const {catchAsync,createRandomPassword,mailOptions} = require('../utils/utils');
+const { catchAsync, createRandomPassword, mailOptions } = require('../utils/utils');
 const sendMail = require('../utils/emailer');
 const appErrors = require('../utils/errors');
 
 // utils 
 
-function alreadyExistingAndSendMail(alreadyArray , currentArray){
-    createAggregate(currentArray);
-    Promise.all(alreadyArray.map(async (employee)=>{
+
+//Status 
+// 1. Offer Accepted
+// 2. Offer Joined
+// 3. Rejcted 
+// 4. Join and Leave 
+// 5. Absocord 
+
+
+function alreadyExistingAndSendMail(alreadyArray, currentArray) {
+    createAggregate(alreadyArray,currentArray);
+    Promise.all(alreadyArray.map(async (employee) => {
         console.log(employee)
         let options = {
-            mailOption:mailOptions("EMP_EXIT","rajput16.harsh@gmail.com",employee)
+            mailOption: mailOptions("EMP_EXIT", "rajput16.harsh@gmail.com", employee)
         }
-        console.log(options,employee);
-        await sendMail(options,"rajput16.harsh@gmail.com",employee);
+        console.log(options, employee);
+        await sendMail(options, "rajput16.harsh@gmail.com", employee);
     }))
 }
 
-function createAggregate (latestEmp){
+async function createAggregate(alreadyArray,latestEmp) {
+   const aggregates =  aggregate.find({
+        $or:
+            [{ adharCard: latestEmp.adharCardId }, { panCard: latestEmp.panCardId }]
+    })
+    if(aggregates.length>0){
+        var query = {
+            name:latestEmp.name,
+            email:latestEmp.email,
+            panCardId:latestEmp.panCardId,
+            adharCardId:latestEmp.adharCardId?latestEmp.adharCardId:'',
+            last_modified:new Date(),
+            _created:new Date(),
+            details:{}
+        }
+        for(var i=0;i<alreadyArray.length;i++){
+            query.details[i] = {
+                company_id:alreadyArray[i].company_id,
+                companyName:alreadyArray[i].companyName,
+                dateOfJoining:alreadyArray[i].dateOfJoining,
+                dateOfOffer:alreadyArray[i].dateOfOffer,
+                status:alreadyArray[i].status
+            }
+        }
+       await aggregate.create(query);
+    }
+    else{
+        for(var i=0;i<alreadyArray.length;i++){
+            query.details[i] = {
+                company_id:alreadyArray[i].company_id,
+                companyName:alreadyArray[i].companyName,
+                dateOfJoining:alreadyArray[i].dateOfJoining,
+                dateOfOffer:alreadyArray[i].dateOfOffer,
+                status:alreadyArray[i].status
+            }
+        }
+       await aggregate.create(query);
+    }
 
 }
 
-exports.create = async function(req,res,next){
-    if(!req.body.name){
+exports.create = async function (req, res, next) {
+    if (!req.body.name) {
         return next(new appErrors('Missing Employee Name', 404));
     }
-    if(!req.body.email){
+    if (!req.body.email) {
         return next(new appErrors('Missing Email Id', 404));
     }
-    if(!req.body.panCardId){
+    if (!req.body.panCardId) {
         return next(new appErrors('Missing PanCard Information', 404));
     }
-    // if(!req.body.company_id){
-    //     return next(new appErrors('Missing Company Information', 404));
-    // }
-    if(!req.body.status){
+    if (!req.body.company_id) {
+        return next(new appErrors('Missing Company Information', 404));
+    }
+    if (!req.body.status) {
         return next(new appErrors('Missing Employee Status', 404));
     }
     // if(!req.body.createdBy){
     //     return next(new appErrors('Missing Subdomain ', 404));
     // }
-    // if(req.body.isSuperAdmin){
-    //     return next(new appErrors('Sorry .... You are not that cool !!! Just Smileeeeee !!!! ', 404)); 
-    // }
     const newEmp = await Employee.create(req.body);
-    if(newEmp){
-        const exitInAnother = await Employee.find({panCardId:newEmp.panCardId,status:{$ne:"closed"}});
-        console.log(exitInAnother,"51");
-        if(exitInAnother.length>1){
-            alreadyExistingAndSendMail(exitInAnother,newEmp);
+    if (newEmp) {
+        const exitInAnother = await Employee.find({
+            panCardId: newEmp.panCardId, status: { $nin : [ 3, 4, 5 ] }, dateOfJoining: {
+                $gt: new Date()
+            }
+        });
+        console.log(exitInAnother, "51");
+        if (exitInAnother.length > 1) {
+            alreadyExistingAndSendMail(exitInAnother, newEmp);
         }
-        else{
+        else {
             return res.status(200).json(newEmp);
         }
     }
-    if(!newEmp){
+    if (!newEmp) {
         return next(new appErrors('Some Error Occured', 404));
-    } 
+    }
 }
 
-exports.update = async function(req,res){
+exports.update = catchAsync(async function (req, res, next) {
     if (!req.body.id) {
         return next(new appErrors('Please Provide user Id ', 404));
     }
-    const updateUser = await Employee.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.body.id) }, req.body, { new: true });
-    if(updateUser){
+    var id = req.body.id;
+    delete req.body.id
+    const updateUser = await Employee.findOneAndUpdate({ _id: mongoose.Types.ObjectId(id) }, req.body, { new: true });
+    console.log(updateUser, "72")
+    if (updateUser) {
         return res.status(200).json({ "msg": "Updated Succesfully" })
     }
-    else next (new appErrors('Unable To update the user',404));
-}
+    else next(new appErrors('Unable To update the user', 404));
+})
 
-exports.updateStatus = async function(req,res){
-    if (!req.body.id) {
+exports.updateStatus = async function (req, res) {
+    if (!req.body._id) {
         return next(new appErrors('Please Provide user Id ', 404));
     }
-    const updateUser = await Employee.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.body.id) }, {status:req.body.status}, { new: true });
-    if(updateUser){
+    const updateUser = await Employee.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.body._id) }, { isActive: req.body.isActive }, { new: true });
+    console.log(updateUser)
+    if (updateUser) {
         return res.status(200).json({ "msg": "Updated Succesfully" })
     }
-    else next (new appErrors('Unable To update the user',404));
+    else next(new appErrors('Unable To update the user', 404));
 }
 
-exports.delete =  async function(req,res){
+exports.delete = async function (req, res) {
     if (!req.body.id) {
         return next(new appErrors('Please Provide user Id ', 404));
     }
     const updateUser = await Employee.findOneAndDelete({ _id: mongoose.Types.ObjectId(req.body.id) });
-    if(updateUser){
+    if (updateUser) {
         return res.status(200).json({ "msg": "Updated Succesfully" })
     }
-    else next (new appErrors('Unable To update the user',404));
+    else next(new appErrors('Unable To update the user', 404));
 }
 
-exports.get = async function(req,res){
-    console.log("get")
-    if (!req.params.id) {
+exports.get = catchAsync(async function (req, res, next) {
+    console.log("get", req.query, req.params)
+    if (!req.query.id) {
         return next(new appErrors('Please Provide user Id ', 404));
     }
-    const userById = await User.findById({ _id:  mongoose.Types.ObjectId(req.params.id)});
+    const userById = await Employee.findById({ _id: mongoose.Types.ObjectId(req.query.id) });
 
-    if(!userById){
-        return next(new appErrors('User Not Found With this Id', 404));
+    if (!userById) {
+        return next(new appErrors('Employee Not Found With this Id', 404));
     }
     return res.status(200).json(userById);
-}
+})
 
-exports.getEmployeesByCompany = catchAsync (async function(req,res,next){
+exports.getEmployeesByCompany = catchAsync(async function (req, res, next) {
     console.log(req.query)
-    if(!req.query.id){
+    if (!req.query.id) {
         return next(new appErrors('Please Provide the company Id'))
     }
 
-    const employees = await Employee.find({company_id:req.query.id})
+    const employees = await Employee.find({ company_id: req.query.id })
     console.log(employees)
-    if(!employees){
-        return next(new appErrors('Unable to find it ',404))
+    if (!employees) {
+        return next(new appErrors('Unable to find it ', 404))
     }
-    return res.status(200).json({data:employees}) 
+    return res.status(200).json({ data: employees })
 })

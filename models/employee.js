@@ -12,8 +12,7 @@ const empSchema = new moongoose.Schema({
     },
     email:{
         type : String,
-        require : [true,"Please provide your name!"],
-        unique: true,
+        require : [true,"Please provide your email!"], 
         lowercase : true,
         // validate : [validator,isEmail,"Please provide a valid Email"]
     },
@@ -21,13 +20,9 @@ const empSchema = new moongoose.Schema({
         type : String,
         require : [true,"Please Provide a PanCard Information"]
     },
-    adharCard:{
+    aadharCardId:{
         type : String,
-        require : [true,"Please Provide a Password"]
-    },
-    voterIdCard:{
-        type : String,
-        require : [true,"Please Provide a Password"]
+        require : [false,"Please Provide a Password"]
     },
     company_id:{
         type : String,
@@ -37,11 +32,15 @@ const empSchema = new moongoose.Schema({
         type : String,
         require : [true,"Please Provide a Password"]
     },
-    companyDetails :{
+    companyDetails :{},
+    remarks :{
         type : String,
-        // require : true
     },
     status :{
+        type : String,
+        require : true
+    },
+    phone :{
         type : String,
         require : true
     },
@@ -49,7 +48,7 @@ const empSchema = new moongoose.Schema({
 
     },
     dateOfJoining:Date,
-    dateOfoffer:Date,
+    dateOfOffer:Date,
     details:{},
     isDeleted:{
         type: Boolean,

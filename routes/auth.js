@@ -5,6 +5,7 @@ var router = express.Router();
 
 
 router.post('/login',auth.login)
-
+router.get('/status',auth.protect,auth.returnStatus)
+router.get('/logOut',auth.logOut)
 
 module.exports = router;

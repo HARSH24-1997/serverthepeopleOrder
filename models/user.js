@@ -42,6 +42,10 @@ const userSchema = new moongoose.Schema({
         type:Date,
         default:Date.now()
     },
+    phone:{
+        type : String,
+        require : true
+    },
     isSuperAdmin:Boolean,
     last_modified:Date,
     last_password_change:Date

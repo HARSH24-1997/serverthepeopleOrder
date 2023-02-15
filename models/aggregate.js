@@ -13,25 +13,12 @@ const aggregateSchema = new moongoose.Schema({
         lowercase : true,
         // validate : [validator,isEmail,"Please provide a valid Email"]
     },
-    panCard:{
+    panCardId:{
         type : String,
         require : [true,"Please Provide a Password"]
     },
-    adharCard:{
+    adharCardId:{
         type : String,
-        require : [true,"Please Provide a Password"]
-    },
-    voterIdCard:{
-        type : String,
-        require : [true,"Please Provide a Password"]
-    },
-    confirmPassword:{
-        type : String,
-        require : [true,"Please Provide a Password"]
-    },
-    currentCompany :{
-        type : String,
-        require : true
     },
     details:{},
     isDeleted:{

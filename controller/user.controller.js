@@ -8,10 +8,10 @@ const appErrors = require('../utils/errors');
 
 exports.get = catchAsync(async function (req, res, next) {
     console.log("get")
-    if (!req.params.id) {
+    if (!req.query.id) {
         return next(new appErrors('Please Provide user Id ', 404));
     }
-    const userById = await User.findById({ _id:  mongoose.Types.ObjectId(req.params.id)});
+    const userById = await User.findById({ _id:  mongoose.Types.ObjectId(req.query.id)});
 
     if(!userById){
         return next(new appErrors('User Not Found With this Id', 404));
@@ -67,6 +67,20 @@ exports.update = catchAsync(async function (req, re) {
     }
     else next (new appErrors('Unable To update the user',404));
 });
+
+exports.updateStatus = async function(req,res,next){
+    console.log(req.body)
+    if (!req.body._id) {
+        return next(new appErrors('Please Provide user Id ', 404));
+    }
+    const updateUser = await User.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.body._id) }, {isActive:req.body.isActive}, { new: true });
+    console.log(updateUser)
+    if(updateUser){
+        return res.status(200).json({ "msg": "Updated Succesfully" })
+    }
+    else next (new appErrors('Unable To update the user',404));
+}
+
 
 exports.getAll = catchAsync(async function (req, res,next) {
     console.log("343434");
