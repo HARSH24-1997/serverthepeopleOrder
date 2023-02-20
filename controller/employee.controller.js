@@ -32,18 +32,18 @@ function alreadyExistingAndSendMail(alreadyArray, currentArray) {
 async function createAggregate(alreadyArray,latestEmp) {
    const aggregates =  aggregate.find({
         $or:
-            [{ adharCard: latestEmp.adharCardId }, { panCard: latestEmp.panCardId }]
+            [{ adharCardId: latestEmp.adharCardId }, { adharCardId: latestEmp.panCardId }]
     })
+    var query = {
+        name:latestEmp.name,
+        email:latestEmp.email,
+        adharCardId:latestEmp.panCardId,
+        adharCardId:latestEmp.adharCardId?latestEmp.adharCardId:'',
+        last_modified:new Date(),
+        _created:new Date(),
+        details:{}
+    }
     if(aggregates.length>0){
-        var query = {
-            name:latestEmp.name,
-            email:latestEmp.email,
-            panCardId:latestEmp.panCardId,
-            adharCardId:latestEmp.adharCardId?latestEmp.adharCardId:'',
-            last_modified:new Date(),
-            _created:new Date(),
-            details:{}
-        }
         for(var i=0;i<alreadyArray.length;i++){
             query.details[i] = {
                 company_id:alreadyArray[i].company_id,
@@ -96,7 +96,6 @@ exports.create = async function (req, res, next) {
                 $gt: new Date()
             }
         });
-        console.log(exitInAnother, "51");
         if (exitInAnother.length > 1) {
             alreadyExistingAndSendMail(exitInAnother, newEmp);
         }

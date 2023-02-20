@@ -26,6 +26,9 @@ exports.login = catchAsync(async function (req, res, next) {
             expiresIn: 24 * 60 * 60 * 60 * 1000,
             httpOnly: true
         })
+        if(!user.isActive){
+            next(new appErrors("User is Inactive by Admin", 404));  
+        }
         res.status(200).json({msg:'login successful',isSuperAdmin:user.isSuperAdmin,token:token})
     }
 })
