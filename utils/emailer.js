@@ -13,7 +13,7 @@ const sendMail = async options => {
 
     const mailOption = options.mailOption
 
-    // await transporter.sendMail(mailOption)
+    await transporter.sendMail(mailOption)
 
 }
 
