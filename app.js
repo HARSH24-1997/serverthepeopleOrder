@@ -38,7 +38,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors({
   credentials: true,
-  origin: ["http://localhost:4200"],
+  origin: ["https://thepeopleorderdash.netlify.app"],
 }));
 
 app.use('/', indexRouter);
