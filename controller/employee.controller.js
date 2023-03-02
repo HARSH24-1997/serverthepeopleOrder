@@ -171,3 +171,79 @@ exports.getEmployeesByCompany = catchAsync(async function (req, res, next) {
     }
     return res.status(200).json({ data: employees })
 })
+
+exports.reportDataSet1 = catchAsync(async function(req,res,next){
+    var query = await Employee.find();
+    query.count(function(err,count){
+        if(err){
+            return next(new appErrors("Sorry Wrong Api",404))
+        }
+        else{
+            return res.status(200).json({
+                Employee:count
+            })
+        }
+    })
+})
+
+exports.reportDataSet2 = catchAsync(async function(req,res,next){
+   var result =[];
+    var cursor = await Employee.aggregate([
+       {
+           $group: {
+               _id: {
+                   "company_id":"$company_id"
+               },
+               count:
+                   { "$sum": 1 }
+           }
+       }
+    ])
+        return res.status(200).json({
+            data:cursor
+        })
+})
+
+exports.reportDataSet3 = catchAsync(async function(req,res,next){
+    var result =[];
+     var cursor = await Employee.aggregate([
+        {
+            $group: {
+                _id: {
+                    "company_id":"$company_id",
+                    "status":"$status"
+                },
+                count:
+                    { "$sum": 1 }
+            }
+        }
+     ])
+         return res.status(200).json({
+             data:cursor
+         })
+ })
+
+ 
+exports.reportDataSet3 = catchAsync(async function(req,res,next){
+    var result =[];
+    var query = {
+        company_id:req.body.company_id
+    }
+     var cursor = await Employee.aggregate([
+        {
+            $match:query
+        },
+        {
+            $group:{
+                "_id":{
+                    "status":"$status"
+                },
+                count:
+                    { "$sum": 1 }
+            }
+        }
+     ])
+         return res.status(200).json({
+             data:cursor
+         })
+ })

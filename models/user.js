@@ -24,10 +24,10 @@ const userSchema = new moongoose.Schema({
     //     type : String,
     //     require : [true,"Please Provide a Password"]
     // },
-    subdomain :{
-        type : String,
-        require : true
-    },
+    // subdomain :{
+    //     type : String,
+    //     require : true
+    // },
     details:{},
     isDeleted:{
         type: Boolean,
@@ -46,6 +46,7 @@ const userSchema = new moongoose.Schema({
         type : String,
         require : true
     },
+    expiryDate:Date,
     isSuperAdmin:Boolean,
     last_modified:Date,
     last_password_change:Date
