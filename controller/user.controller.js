@@ -109,7 +109,7 @@ exports.getByToken = catchAsync(async function(req,res,next){
 })
 
 exports.reportDataSet1 = catchAsync(async function(req,res,next){
-        var query = await User.find();
+        var query = User.find();
         query.count(function(err,count){
             if(err){
                 return next(new appErrors("Sorry Wrong Api",404))
@@ -122,6 +122,3 @@ exports.reportDataSet1 = catchAsync(async function(req,res,next){
         })
 })
 
-exports.reportDataSet2 = catchAsync(async function(req,res,next){
-
-})

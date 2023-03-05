@@ -15,6 +15,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var employeeRouter = require('./routes/employee');
+var tempUsersRouter = require('./routes/tempUsers')
 
 var DB = process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
 
@@ -45,6 +46,7 @@ app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/user', usersRouter);
 app.use('/employee', employeeRouter);
+app.use('/tempUser',tempUsersRouter);
 
 
 // catch 404 and forward to error handler

@@ -173,7 +173,7 @@ exports.getEmployeesByCompany = catchAsync(async function (req, res, next) {
 })
 
 exports.reportDataSet1 = catchAsync(async function(req,res,next){
-    var query = await Employee.find();
+    var query = Employee.find();
     query.count(function(err,count){
         if(err){
             return next(new appErrors("Sorry Wrong Api",404))
@@ -192,7 +192,8 @@ exports.reportDataSet2 = catchAsync(async function(req,res,next){
        {
            $group: {
                _id: {
-                   "company_id":"$company_id"
+                   "company_id":"$company_id",
+                   "companyName":"$companyName"
                },
                count:
                    { "$sum": 1 }

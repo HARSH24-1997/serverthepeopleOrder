@@ -3,7 +3,7 @@ const JsonWebToken = require('jsonwebtoken');
 const Util = require('util');
 const appErrors = require('../utils/errors');
 const {catchAsync,createRandomPassword,mailOptions} = require('../utils/utils');
-
+const sendMail = require('../utils/emailer');
 
 // For Login New User
 exports.login = catchAsync(async function (req, res, next) {
@@ -111,3 +111,14 @@ const signToken = id =>{
     })
 }
 
+
+//Queries Mail 
+
+
+exports.queries = catchAsync(async function(req,res,next){
+    var options = {
+        mailOption:mailOptions("Queries","rajput16.harsh@gmail.com",req.body)
+    }
+    sendMail(options,"rajput16.harsh@gmail.com",req.body);
+    return res.status(200).json(newUser);
+})
