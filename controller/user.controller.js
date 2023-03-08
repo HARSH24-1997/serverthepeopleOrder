@@ -30,7 +30,7 @@ exports.create = catchAsync(async function (req, res,next) {
     if(req.body.isSuperAdmin){
         return next(new appErrors('Sorry .... You are not that cool !!! Just Smileeeeee !!!! ', 404)); 
     }
-    if(req.body.expiryDate){
+    if(!req.body.expiryDate){
         return next(new appErrors('Missing Expiry Date', 404)); 
     }
     req.body.password = createRandomPassword();
@@ -81,26 +81,17 @@ exports.updateStatus = catchAsync(async function(req,res,next){
 });
 
 
-exports.getAll = catchAsync(async function (req, res,next) {
-    console.log("343434");
+exports.getAll = catchAsync(async function (req, res, next) {
     let users = [];
-    var query = {
+    let query = {
         isSuperAdmin: {
-            $eq: false
+            $ne: true
         }
     }
-    var superAdmin = req.body.isSuperAdmin;
-    console.log(superAdmin);
-    superAdmin = true;
-    if (superAdmin) {
-        users = await User.find({query},{_id:1,companyName:1,createdBy:1,isActive:1,details:1,email:1,expiryDate:1});
-        return res.status(200).json({
-            users:users
-        })
-    }
-    else {
-        return next(new appErrors("Sorry Wrong Api",404))
-    }
+    users = await User.find(query,{ _id: 1, companyName: 1, createdBy: 1, isActive: 1, details: 1, email: 1, expiryDate: 1 });
+    return res.status(200).json({
+        users: users
+    })
 });
 
 

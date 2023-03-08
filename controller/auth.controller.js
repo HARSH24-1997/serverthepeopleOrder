@@ -15,18 +15,22 @@ exports.login = catchAsync(async function (req, res, next) {
         email: username,
     }
     const user = await User.findOne(query).select("+password");
-    console.log(user)
+    const validity = new Date(user.expiryDate).getTime();
+    const threshold = new Date().getTime();
+    console.log(user,"20")
     if (!user || !await user.correctPassword(user.password, password)) {
         next(new appErrors("Incorrect Username or Password", 400));
     }
     else {
         const token = signToken(user._id);
-        console.log(token,"21");
          res.cookie('jwt', token, {
             expiresIn: 24 * 60 * 60 * 60 * 1000,
             httpOnly: true
         })
         if(!user.isActive){
+            next(new appErrors("User is Inactive by Admin", 404));  
+        }
+        if(!user.isSuperAdmin && (validity < threshold)){
             next(new appErrors("User is Inactive by Admin", 404));  
         }
         res.status(200).json({msg:'login successful',isSuperAdmin:user.isSuperAdmin,token:token})
